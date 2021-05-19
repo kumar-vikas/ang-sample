@@ -1,0 +1,140 @@
+<!doctype html>
+<html ng-app="playerApp">
+  <head>
+    <meta charset="utf-8">
+    <title>Activity Player</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- build:css(.) styles/vendor.css -->
+    <!-- bower:css -->
+    <!-- endbower -->
+    <!-- endbuild -->
+    <!-- build:css(.tmp) styles/main.css -->
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- endbuild -->
+  </head>
+  <!--  stop-screen-move on-resize ng-style="style()" -->
+  <body ng-controller="playerController as player" stop-screen-move on-resize ng-style="style()">
+  
+    <!--[if lte IE 8]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <!-- Add your site or application content here -->
+    <div class="stage" ng-controller="dataController as data">
+      <div class="headerArea" ng-class="player.isGame ? 'gameMode' : ''">
+        <div class="rubric">
+          <div class="rubricNumber"><div ng-bind-html="player.rubricNumber"></div></div>
+          <div class="rubricText" ng-bind-html="player.rubricText"></div>
+        </div>
+      </div>
+
+      <div class="containerArea" ng-class="player.isGame ? 'gameMode' : ''">
+        <img ng-src="{{data.getUnitBG()}}" ng-show="(data.bgType === 'image')" />
+        <video autoplay ng-src="{{data.getUnitBG()}}" ui-event="{ended: 'player.onUnitBGEnded()'}" ng-show="(data.bgType === 'video')"></video>
+
+        <div class="contentArea" ng-class="{activityDisplay:(player.showActivity), gameMode:(player.isGame)}">
+
+          <!-- activity content - Start -->
+          <div ng-view ng-class="player.isGame ? 'gameMode' : ''"></div>
+          <!-- activity content - End -->
+
+          <!-- popup content - Start -->
+          <div class="popupHolder" ng-show="player.showPopup">
+            <div class="popupBlocker" ng-show="player.showPopup"></div>
+            <div class="popupBox" ng-show="player.showPopup" ng-drag="true" data-allow-transform="true" ng-drag-stop="player.onDragRelease($event)">
+              <div class="popupContent">
+                <img ng-src="{{player.popUpContent}}" ng-show="(player.popUpType === 'image')" />
+                <video class="popVideo" ng-src="{{player.popUpContent}}" ng-show="(player.popUpType === 'video')"></video>
+              </div>
+              <div class="popupHeader">
+                <div class="popupTitle"><img ng-src="{{player.popUpHeader}}" ng-show="player.popUpHeader!=''"/></div>
+                <div class="popupClose" ng-click="player.closePopup()"></div>
+              </div>
+            </div>
+          </div>
+          <!-- popup content - End -->
+        </div>
+      </div>
+
+      <div class="footerArea" ng-hide='player.showGameOnly'>
+        <div class="prevBtn" ng-class="((player.currentActivityIndex === 0) ? 'disable' : '')" ng-click="player.gotoPrevActivity($event)"></div>
+        <div class="controllBar">
+          <div class="playpauseBtn roundBtns" ng-show="player.showVideoControls" ng-click="player.playPauseVideo()" ng-class="player.isVideoPlaying ? 'pause' : 'play'"></div>
+          <div class="muteBtn roundBtns mute" ng-show="player.showVideoControls" ng-click="player.muteUnmuteAudio()" ng-class="player.isAudioPlaying ? 'unmute' : 'mute'"></div>
+          <div class="showhideBtn roundBtns" ng-show="player.showTextControls" ng-click="player.showHideText()" ng-class="player.isShowText ? 'showText' : 'hideText'"></div>
+          <div class="popupBtn" ng-show="player.showPopupControls" ng-click="player.displayPopup('act')"></div>
+          <div class="popupGmrBtn" ng-show="player.showGmrPopupControls" ng-click="player.displayPopup('gmr')"></div>
+          <div class="popupGCBtn" ng-show="player.showGCPopupControls" ng-click="player.displayPopup('gc')"></div>
+          <div class="extraBtn" ng-show="player.showExtraControls" ng-click="player.launchExtraActivity()"></div>
+          <div class="grammerBtn0" ng-show="player.showGrammerControls0" ng-click="player.launchGrammerActivity0()"></div> 
+          <div class="grammerBtn1" ng-show="player.showGrammerControls1" ng-click="player.launchGrammerActivity1()"></div>
+          <div class="showAnsBtn" ng-show="player.showSubmitControls" ng-click="player.showAnswer($event)"></div>
+          <div class="checkAnsBtn" ng-show="player.showSubmitControls" ng-click="player.checkAnswer($event)" ng-class="player.isShowAnswer ? 'disable' : ''"></div>
+          <!--div class="btn btn-primary" ng-show="player.showSubmitControls" ng-click="player.resetAnswer()">Reset</div-->
+        </div>
+
+        <div class="nextBtn" ng-class="((player.currentActivityIndex === (player.totalActivities - 1)) ? 'disable' : '')" ng-click="player.gotoNextActivity($event)"></div>
+      </div>
+    </div>
+
+    <div id="loader">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
+
+    <audio id="audCorrect" preload>
+      <source src="audios/correct.mp3" type="audio/mpeg"></source>
+      <source src="audios/correct.ogg" type="audio/ogg"></source>
+      Your browser does not support the audio element.
+    </audio>  
+    <audio id="audIncorrect" preload>
+      <source src="audios/incorrect.mp3" type="audio/mpeg"></source>
+      <source src="audios/incorrect.ogg" type="audio/ogg"></source>
+      Your browser does not support the audio element.
+    </audio>
+
+    <!-- build:js(.) scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.js"></script>
+    <script src="bower_components/angular-cookies/angular-cookies.js"></script>
+    <script src="bower_components/angular-resource/angular-resource.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+    <script src="bower_components/angular-touch/angular-touch.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:js({.tmp,app}) scripts/scripts.js -->
+    <script type="text/javascript" src="scripts/libs/underscore-min.js"></script>
+
+    <script type="text/javascript" src="scripts/vars.js"></script>
+    <script type="text/javascript" src="scripts/app.js"></script>
+    <script type="text/javascript" src="scripts/config/config.js"></script>
+    <script type="text/javascript" src="scripts/directives/onresize.js"></script>
+    <script type="text/javascript" src="scripts/directives/stopscreenmove.js"></script>
+    <script type="text/javascript" src="scripts/directives/uiEvent.js"></script>
+    <script type="text/javascript" src="scripts/directives/writeinContentParser.js"></script>
+    <script type="text/javascript" src="scripts/directives/dnddirective.js"></script>
+    <script type="text/javascript" src="scripts/directives/comboContentParser.js"></script>
+
+    <script type="text/javascript" src="scripts/data/data.js"></script>
+    <script type="text/javascript" src="scripts/controllers/player.js"></script>
+    <script type="text/javascript" src="scripts/controllers/flat.js"></script>
+    <!--<script type="text/javascript" src="scripts/controllers/writein.js"></script>-->
+    <script type="text/javascript" src="scripts/controllers/listenFind.js"></script>
+    <script type="text/javascript" src="scripts/controllers/videoAnim.js"></script>
+    <script type="text/javascript" src="scripts/controllers/dndCat.js"></script>
+    <script type="text/javascript" src="scripts/controllers/combo.js"></script>
+    <script type="text/javascript" src="scripts/controllers/forest.js"></script>
+    <script type="text/javascript" src="scripts/controllers/mouse.js"></script>
+    <!-- endbuild -->
+</body>
+</html>
